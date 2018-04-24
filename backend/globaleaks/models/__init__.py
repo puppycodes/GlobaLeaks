@@ -962,9 +962,10 @@ class _Tenant(Model):
     active = Column(Boolean, default=True, nullable=False)
     creation_date = Column(DateTime, default=datetime_now, nullable=False)
     subdomain = Column(UnicodeText, default=u'', nullable=False)
+    protected = Column(Boolean, default=False, nullable=False)
 
     unicode_keys = ['label', 'subdomain']
-    bool_keys = ['active']
+    bool_keys = ['active', 'protected']
 
 
 class _User(Model):
