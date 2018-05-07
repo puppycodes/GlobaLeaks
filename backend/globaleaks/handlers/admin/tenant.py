@@ -14,6 +14,7 @@ from globaleaks.handlers.admin import file
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.orm import transact
 from globaleaks.rest import requests
+from globaleaks.utils import import_export
 from globaleaks.utils.utility import log
 from globaleaks.settings import Settings
 from globaleaks.state import State
@@ -156,3 +157,15 @@ class TenantInstance(BaseHandler):
         log.info('Removing tenant with id: %d', tenant_id, tid=self.request.tid)
 
         return delete(tenant_id)
+
+class TenantExport(BaseHandler):
+    check_roles = 'admin'
+    invalidate_cache = True
+    root_tenant_only = True
+    invalidate_tenant_states = True
+
+    def get(self, tenant_id):
+        tenant_id = int(tenant_id)
+
+        return "test"
+
