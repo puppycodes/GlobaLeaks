@@ -75,10 +75,6 @@ def row_serializator(session, rowset, output_list):
     '''Serializes and expunges a row for import into a clean DB'''
     for row in rowset:
         session.expunge(row)
-        if hasattr(row, 'tid'):
-            row.tid = EXPORTED_TENANT_ID
-        if hasattr(row, 'tenant_id'):
-            row.tenant_id = EXPORTED_TENANT_ID
         output_list.append(row)
 
 def build_id_list(dataset, column_name):
@@ -108,7 +104,11 @@ def collect_all_tenant_data(db_file, tid):
     # First recover the base tenant data
     session = get_session(make_db_uri(db_file))
     tenant = session.query(models.Tenant).filter_by(id=tid).first()
-    print("Exporting Tenant: " + tenant.label)
+
+    if tid == EXPORTED_TENANT_ID:
+        print("Importing Tenant: " + tenant.label)
+    else:
+        print("Exporting Tenant: " + tenant.label)
     session.expunge(tenant)
 
     # Zero out the PK to note that this is special
@@ -212,11 +212,8 @@ def collect_all_tenant_data(db_file, tid):
     session.close()
     return tenant_data
 
-def write_tenant_to_fresh_db(tenant_data):
+def write_tenant_to_fresh_db(tenant_data, db_path):
     '''Writes the tenant data to a fresh database'''
-    
-    # Now we need to initialize a fresh database
-    db_path = '/tmp/globaleaks.db'
 
     # FIXME: Remove testing code for proper temp db
     try:
@@ -234,9 +231,39 @@ def write_tenant_to_fresh_db(tenant_data):
     print("Initialized empty GlobaLeaks database at " + db_path)
 
     session = get_session(make_db_uri(db_path))
+    merge_tenant_data(session, tenant_data, EXPORTED_TENANT_ID)
 
-    # Create the root tenant object
-    session.merge(tenant_data['tenant'])
+def write_tenant_to_preexisting_db(tenant_data, db_path):
+    '''Writes the tenant data to a pre-existing DB'''
+    session = get_session(make_db_uri(db_path))
+    merge_tenant_data(session, tenant_data, None)
+
+def merge_tenant_data(session, tenant_data, tid=None):
+    '''Merges the tenant data into a new and/or existing database
+
+    tid is None means an autoincremented one is take from the database
+    '''
+
+    if tid is None:
+        tenant_data['tenant'].id = None
+        tenant_obj = session.merge(tenant_data['tenant'])
+        session.flush()
+        tid = tenant_obj.id
+    else:
+        tenant_data['tenant'].id = tid
+        session.merge(tenant_data['tenant'])
+
+    print(tid)
+    # Correct the TID in all rows
+    for datatype, rowset in tenant_data.items():
+        if datatype is 'tenant':
+            continue
+
+        for row in rowset:
+            if hasattr(row, 'tid'):
+                row.tid = tid
+            if hasattr(row, 'tenant_id'):
+                row.tenant_id = tid
 
     # Replay the tenant data
     for element in IMPORT_ORDER:
@@ -245,11 +272,10 @@ def write_tenant_to_fresh_db(tenant_data):
             for fieldanswer in tenant_data['fieldanswer']:
                 nulled_field = session.query(models.FieldAnswer).filter_by(id=fieldanswer.id).first()
                 nulled_field.fieldanswergroup_id = fieldanswer.fieldanswergroup_id
-                session.commit()
         else:
             for row in tenant_data[element]:
                 session.merge(row)
-                session.commit()
 
-    print("Export Complete!")
+    session.commit()
+    print("Complete!")
     session.close()
