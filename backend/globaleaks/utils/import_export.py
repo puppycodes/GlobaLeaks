@@ -2,7 +2,11 @@
 # Functions related to importing/exporting the data from a GL instance
 
 import copy
+import io
 import os
+import shutil
+import tarfile
+import tempfile
 
 from globaleaks import models
 from globaleaks.db import get_db_file, make_db_uri
@@ -95,14 +99,13 @@ def collect_pk_relation(session, model, pks, filter_column):
 
     return data
 
-def collect_all_tenant_data(db_file, tid):
+def collect_all_tenant_data(session, tid):
     '''Collects the tenant data into dictionary form ready for serialization
        into a new database instance detaching the information from SQLAlchemy'''
 
     tenant_data = {}
 
     # First recover the base tenant data
-    session = get_session(make_db_uri(db_file))
     tenant = session.query(models.Tenant).filter_by(id=tid).first()
 
     if tid == EXPORTED_TENANT_ID:
@@ -253,7 +256,6 @@ def merge_tenant_data(session, tenant_data, tid=None):
         tenant_data['tenant'].id = tid
         session.merge(tenant_data['tenant'])
 
-    print(tid)
     # Correct the TID in all rows
     for datatype, rowset in tenant_data.items():
         if datatype is 'tenant':
@@ -279,3 +281,23 @@ def merge_tenant_data(session, tenant_data, tid=None):
     session.commit()
     print("Complete!")
     session.close()
+
+def create_export_tarball(session, tid):
+    '''Creates an export tarball, either as a file on disk, or in memory as a variable'''
+
+    try:
+        dirpath = tempfile.mkdtemp()
+
+        # Write out a export format version marker
+        with open(dirpath + "/EXPORT_FORMAT", 'w') as f:
+            f.write(str(1))
+
+        output_file = io.BytesIO()
+
+        with tarfile.open(fileobj=output_file, mode='w:gz') as export_tarball:
+            export_tarball.add(dirpath + "/EXPORT_FORMAT", arcname="EXPORT_FORMAT")
+
+    finally:
+        shutil.rmtree(dirpath)
+
+    return output_file.getvalue()

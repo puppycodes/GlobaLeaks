@@ -101,6 +101,9 @@ def delete(session, id):
 
     db_refresh_memory_variables(session, [id])
 
+@transact
+def export_tenant(session, tid):
+    return import_export.create_export_tarball(session, tid)
 
 class TenantCollection(BaseHandler):
     check_roles = 'admin'
@@ -167,5 +170,5 @@ class TenantExport(BaseHandler):
     def get(self, tenant_id):
         tenant_id = int(tenant_id)
 
-        return "test"
+        return export_tenant(tenant_id)
 
