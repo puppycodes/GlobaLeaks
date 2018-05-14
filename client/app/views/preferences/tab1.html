@@ -6,41 +6,27 @@
       </div>
       <p><label><span data-translate>Username</span>:</label> {{::preferences.username }}</p>
       <p><label><span data-translate>Role</span>:</label> <span>{{::session.role_l10n()}}</span></p>
-      <p><label><span data-translate>Name</span>:</label> {{::preferences.name }}
-        <button class="btn btn-xs btn-default"
-          data-ng-show="!editingName"
-          data-ng-click="toggleNameEditing(); $event.stopPropagation();">
-          <span data-translate>Edit</span>
-        </button>
-        <div class="editor nested" data-ng-if="editingName">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group" data-ng-show="editingName">
-                <label data-translate>Name</label>
-                <input class="form-control" name="name" data-ng-model="preferences.name" type="text" required />
-                <div class="text-danger" data-ng-show="editingName.name.$error.required" data-translate>This field is mandatory</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <p><label><span data-translate>Name</span>:</label>
+        <span data-ng-if="!editingName">
+          <span>{{::preferences.name }}</span>
+          <button class="btn btn-xs btn-default"
+            data-ng-show="!editingName"
+            data-ng-click="toggleNameEditing(); $event.stopPropagation();">
+            <span data-translate>Edit</span>
+          </button>
+        </span>
+        <input data-ng-if="editingName" class="form-control" name="name" data-ng-model="preferences.name" type="text" required />
       </p>
-      <p><label><span data-translate>Email address</span>:</label> {{::preferences.mail_address }}
-        <button class="btn btn-xs btn-default"
-          data-ng-show="!editingEmailAddress"
-          data-ng-click="toggleEmailAddressEditing(); $event.stopPropagation();">
-          <span data-translate>Edit</span>
-        </button>
-        <div class="editor nested" data-ng-if="editingEmailAddress">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group" data-ng-show="editingEmailAddress">
-                <label data-translate>Email address</label>
-                <input class="form-control" name="mail_address" data-ng-model="preferences.mail_address" data-ng-pattern="email_regexp" type="text" required />
-                <div class="text-danger" data-ng-show="editingEmailAddress.name.$error.required" data-translate>This field is mandatory</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <p><label><span data-translate>Email address</span>:</label>
+        <span data-ng-if="!editingEmailAddress">
+          <span>{{::preferences.mail_address }}</span>
+          <button class="btn btn-xs btn-default"
+            data-ng-show="!editingEmailAddress"
+            data-ng-click="toggleEmailAddressEditing(); $event.stopPropagation();">
+            <span data-translate>Edit</span>
+          </button>
+        </span>
+        <input data-ng-if="editingEmailAddress" class="form-control" name="mail_address" data-ng-model="preferences.mail_address" data-ng-pattern="email_regexp" type="text" required />
       </p>
     </button>
     <div class="form-group" data-ng-show="editingEmail">
