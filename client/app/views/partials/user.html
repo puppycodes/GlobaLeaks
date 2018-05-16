@@ -13,7 +13,13 @@
            <span class="text-separator">(</span><a data-ng-href="{{session.homepage}}">{{session.role_l10n()}}</a><span class="text-separator">)</span>
         </span>
       </span>
-     <span id="PreferencesLinkBox" data-ng-if="session.role != 'whistleblower'">
+      <span id="PreferencesLinkBox" data-ng-if="session.role != 'whistleblower' && node.allow_non_admin_customization">
+        <span class="text-separator">|</span>
+        <span>
+          <a id="PreferencesLink" href="/#/admin" data-translate>Site Settings</a>
+        </span>
+      </span>
+      <span id="PreferencesLinkBox" data-ng-if="session.role != 'whistleblower'">
        <span class="text-separator">|</span>
        <span>
          <a id="PreferencesLink" href="/#/preferences" data-translate>Preferences</a>
