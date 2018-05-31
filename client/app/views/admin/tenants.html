@@ -16,6 +16,11 @@
           <label>
         </div>
         <div class="form-group">
+            <input data-ng-model="admin.node.root_tenant_admin_only" type="checkbox" />
+            <label><span data-translate>Administrative-only root tenant</span></label>    
+            <p data-translate>With this option set, only the administrative interface of the root tenant will be accessible. Submission will be unavailable.</p>
+        </div>
+        <div class="form-group">
           <label>
             <input data-ng-model="admin.node.enable_footer_customization" type="checkbox" />
             <span data-translate>Enable footer customization<span>
