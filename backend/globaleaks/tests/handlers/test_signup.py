@@ -56,3 +56,31 @@ class TestSignupActivation(helpers.TestHandler):
         r = yield handler.get(u'invalid')
 
         self.assertTrue(not r)
+
+class TestSignupExistence(helpers.TestHandler):
+    _handler = signup.SignupExistence
+
+    @inlineCallbacks
+    def test_nonexistant_tenant(self):
+        handler = self.request()
+        r = yield handler.get('test.com')
+
+        self.assertFalse(r['exists'])
+
+    @inlineCallbacks
+    def test_existant_tenant(self):
+        yield enable_signup()
+
+        self._handler = signup.Signup
+        handler = self.request(self.dummySignup)
+        r = yield handler.post()
+
+        self._handler = signup.SignupActivation
+        handler = self.request(self.dummySignup)
+        r = yield handler.get(r['signup']['activation_token'])
+
+        self._handler = signup.SignupExistence
+        handler = self.request()
+        r = yield handler.get(self.dummySignup['subdomain'])
+
+        self.assertTrue(r['exists'])

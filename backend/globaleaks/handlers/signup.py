@@ -143,6 +143,12 @@ def signup_activation(session, state, tid, token, language):
 
     return {}
 
+@transact
+def is_tenant_subdomain_in_use(session, tenant_subdomain):
+    tenant = session.query(models.Tenant).filter(models.Tenant.subdomain == tenant_subdomain).first()
+    if tenant is not None:
+        return { 'exists' : True }
+    return { 'exists' : False }
 
 class Signup(BaseHandler):
     """
@@ -179,3 +185,14 @@ class SignupActivation(BaseHandler):
       self.state.refresh_tenant_states()
 
       return ret
+
+class SignupExistence(BaseHandler):
+    """
+    Verifies that a tenant domain is not in use
+    """
+    check_roles = 'unauthenticated'
+    invalidate_cache = True
+
+    def get(self, tenant_subdomain):
+        ret =  is_tenant_subdomain_in_use(tenant_subdomain)
+        return ret

@@ -158,6 +158,7 @@ api_spec = [
     (r'/wizard', wizard.Wizard),
     (r'/signup', signup.Signup),
     (r'/signup/([a-zA-Z0-9_\-]{32})', signup.SignupActivation),
+    (r'/signup_existence/(.+)', signup.SignupExistence),
 
     (r'/admin/config/acme/run', https.AcmeHandler),
     (r'/.well-known/acme-challenge/([a-zA-Z0-9_\-]{42,44})', https.AcmeChallengeHandler),
